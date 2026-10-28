@@ -28,6 +28,8 @@
 #define MENU_NAME_WIDTH        24
 #define MENU_SIZE_COL          26
 #define MENU_MAPPER_COL        31
+#define JOY_FIRST_DELAY        12U // jiffies before a held direction starts repeating
+#define JOY_REPEAT_DELAY       4U  // jiffies between repeats
 
 static void copy_separator_char_pattern(void);
 static void print_separator_line(void);
@@ -403,6 +405,46 @@ static unsigned char bios_chget(void) __naked
     __endasm;
 }
 
+// bios_gtstck - Read a joystick direction using the MSX BIOS routine GTSTCK
+// port 1 and 2 select the joystick ports. Returns 0 (centered) or 1-8 (clockwise from up).
+static unsigned char bios_gtstck(unsigned char port) __naked
+{
+    (void)port;
+    __asm
+    ld      hl,#2
+    add     hl,sp
+    ld      a,(hl)
+    ld      iy,(#BIOS_EXPTBL-1)
+    push    ix
+    ld      ix,#BIOS_GTSTCK
+    call    BIOS_CALSLT
+    pop     ix
+    ld      l,a
+    ld      h,#0
+    ret
+    __endasm;
+}
+
+// bios_gttrig - Read a trigger button using the MSX BIOS routine GTTRIG
+// 1/3 select port 1 buttons A/B and 2/4 select port 2 buttons A/B. Returns 0xFF when pressed.
+static unsigned char bios_gttrig(unsigned char button) __naked
+{
+    (void)button;
+    __asm
+    ld      hl,#2
+    add     hl,sp
+    ld      a,(hl)
+    ld      iy,(#BIOS_EXPTBL-1)
+    push    ix
+    ld      ix,#BIOS_GTTRIG
+    call    BIOS_CALSLT
+    pop     ix
+    ld      l,a
+    ld      h,#0
+    ret
+    __endasm;
+}
+
 // joystick_direction_to_key - Convert joystick direction to key code
 // This function will convert the joystick direction to the corresponding key code.
 static int joystick_direction_to_key(unsigned char dir)
@@ -419,6 +461,54 @@ static int joystick_direction_to_key(unsigned char dir)
         default:
             return 0;
     }
+}
+
+// Joystick state, initialized in main(). Directions repeat at a controlled rate and the
+// fire button only triggers once per press, because the raw joystick is too fast for the menu.
+static unsigned char joy_last_dir;
+static unsigned char joy_fire_down;
+static unsigned int joy_repeat_at;
+
+// poll_joystick - Poll both joystick ports and translate them to menu key codes
+// Returns the cursor key code for a direction (with first-press delay and auto-repeat),
+// 13 (Enter) for a new fire button press, or 0 when there is nothing to report.
+static int poll_joystick(void)
+{
+    volatile unsigned int *jiffyPtr = (volatile unsigned int *)JIFFY;
+    unsigned char fire = bios_gttrig(1) | bios_gttrig(2) | bios_gttrig(3) | bios_gttrig(4);
+    unsigned char dir = bios_gtstck(1);
+    int key;
+
+    if (!dir) {
+        dir = bios_gtstck(2);
+    }
+
+    if (fire) {
+        if (!joy_fire_down) {
+            joy_fire_down = 1;
+            return 13;
+        }
+    } else {
+        joy_fire_down = 0;
+    }
+
+    key = joystick_direction_to_key(dir);
+    if (!key) {
+        joy_last_dir = 0;
+        return 0;
+    }
+
+    unsigned int now = *jiffyPtr;
+    if (dir != joy_last_dir) {
+        joy_last_dir = dir;
+        joy_repeat_at = now + JOY_FIRST_DELAY;
+        return key;
+    }
+    if ((int)(now - joy_repeat_at) >= 0) {
+        joy_repeat_at = now + JOY_REPEAT_DELAY;
+        return key;
+    }
+    return 0;
 }
 
 // wait_for_key_with_scroll - Wait for a key press with scrolling effect
@@ -442,37 +532,11 @@ static int wait_for_key_with_scroll(unsigned int recordIndex, unsigned int row)
             return (int)bios_chget();
         }
 
-        /*
-        //joystick is too fast and not precise for menu navigation
-        //need to implement some kind of delay or repeat rate control
-        //also Fusion-C triggers are not working properly, need to investigate further
-
-        // check for joystick input
-        unsigned char joy1 = JoystickRead(0x01);
-        unsigned char joy2 = JoystickRead(0x02);
-        
-        // any joystick inputs are valid
-        int joyKey1 = joystick_direction_to_key(joy1); 
-        if (joyKey1) {
-            return joyKey1;
+        // check for joystick input on both ports
+        int joyKey = poll_joystick();
+        if (joyKey) {
+            return joyKey;
         }
-        int joyKey2 = joystick_direction_to_key(joy2);
-        if (joyKey2) {
-            return joyKey2;
-        }
-
-        int joyButton1 = TriggerRead(0x01);
-        int joyButton2 = TriggerRead(0x02);
-        int joyButton = joyButton1 | joyButton2;
-        if (joyButton) {
-            return 13; // Enter key
-        }
-        */
-
-        //debug
-        //Locate(0, 23);
-        //printf("Joy1: %02X Joy2: %02X", joy1, joy2);
-        //printf("TR1: %02X TR2: %02X", joyButton1, joyButton2);
 
         // handle scrolling
         if (shouldScroll) {
@@ -581,6 +645,10 @@ void helpMenu()
     printf("Press [A]-[Z] to go to the first rom");
     Locate(0, 8);
     printf("  file starting with that letter");
+    Locate(0, 9);
+    printf("Joystick: move to navigate, fire to");
+    Locate(0, 10);
+    printf("  load the selected rom file");
     Locate(0, 21);
     print_separator_line();
     Locate(0, 22);
@@ -744,6 +812,9 @@ void main() {
     clear_fkeys(); // Clear the function keys
     ((char *)BIOS_FNKSTR)[0] = MENU_KEY_F1_HELP; // F1 returns the help key code
     //KillKeyBuffer(); // Clear the key buffer
+    joy_last_dir = 0;
+    joy_fire_down = 1; // a fire button held during boot must be released before it loads a ROM
+    joy_repeat_at = 0;
 
     // Display the menu
     displayMenu();

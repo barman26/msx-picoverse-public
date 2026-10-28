@@ -1,3 +1,9 @@
+# PicoVerse 2350 Yamanooto v1.19
+
+- Version bumped to v1.19 (top-level and tool Makefiles, and the tool's fallback `APP_VERSION`).
+- Moved the RP2350 firmware build from Pico SDK 2.2.0 to Pico SDK 2.3.1 (including its bundled TinyUSB), from the Arm GNU Toolchain 14.2.Rel1 to 15.2.Rel1 (GCC 15.2.1) and from picotool 2.2.0-a4 to 2.3.1. `pico/yamanooto/CMakeLists.txt` now sets `sdkVersion 2.3.1`, `toolchainVersion 15_2_Rel1` and `picotoolVersion 2.3.1`, and `pico/yamanooto/pico_extras_import.cmake` fetches pico-extras at tag `sdk-2.3.1` (it was `sdk-2.1.1`) so the audio library matches the SDK. The SDK, toolchain, picotool and pioasm are expected under `~/.pico-sdk/sdk/2.3.1`, `~/.pico-sdk/toolchain/15_2_Rel1`, `~/.pico-sdk/picotool/2.3.1` and `~/.pico-sdk/tools/2.3.1`. The old `pico/yamanooto/build` directory must be removed once so CMake reconfigures and refetches pico-extras (`make clean` does this).
+- Clean `make all` build succeeds with no source changes; the firmware went from 65248 to 65872 bytes. The embedded firmware header and `tool/dist/yamanooto.exe` were regenerated, and the rebuilt tool writes both plain and `-f` (FM-PAC) UF2 images. Not yet tested on hardware; the MSX bus, expanded-slot/FM-PAC, flash-save and audio paths need a check on a real MSX with the new SDK and compiler (including the Pampas & Selene boot and the Aleste Collection) before release.
+
 # PicoVerse 2350 Yamanooto v1.18
 
 - Made the FM-PAC / expanded slot optional and OFF by default. The cartridge is now presented as a plain, non-expanded slot (exactly like the real Yamanooto hardware and openMSX) unless the FM-PAC is explicitly requested, restoring compatibility with games that mis-handle an expanded cartridge slot (e.g. Aleste Gaiden in the Aleste Collection, which was showing "Syntax error in 0").

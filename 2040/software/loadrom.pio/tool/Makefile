@@ -33,7 +33,7 @@ CCFLAGS := -g
 endif
 
 # Application metadata
-VERSION ?= v2.64
+VERSION ?= v2.65
 
 # Project files
 SOURCES := loadrom.c 
@@ -52,7 +52,8 @@ MIDIBIN       := ../pico/midi/dist/midi.bin
 MIDIBIN_H     := $(SRCDIR)/midi_fw.h
 MIDIPACBIN    := ../pico/midipac/dist/midipac.bin
 MIDIPACBIN_H  := $(SRCDIR)/midipac_fw.h
-
+JOYSTICKBIN   := ../pico/joystick/dist/joystick.bin
+JOYSTICKBIN_H := $(SRCDIR)/joystick_fw.h
 # Helpers
 RM := rm -f
 
@@ -64,7 +65,7 @@ compile: $(BINDIR)/$(OUTFILE)
 
 package: $(DISDIR)/loadrom.exe
 
-$(BINDIR)/$(OUTFILE): $(BINDIR) $(SRCDIR)/$(SOURCES) $(PICOBIN_H) $(PICOBIN) $(NEXTOR_SUNRISE_H) $(NEXTOR_SUNRISE) $(NEXTOR3_H) $(NEXTOR3) $(KEYBOARDBIN_H) $(KEYBOARDBIN) $(MIDIBIN_H) $(MIDIBIN) $(MIDIPACBIN_H) $(MIDIPACBIN)
+$(BINDIR)/$(OUTFILE): $(BINDIR) $(SRCDIR)/$(SOURCES) $(PICOBIN_H) $(PICOBIN) $(NEXTOR_SUNRISE_H) $(NEXTOR_SUNRISE) $(NEXTOR3_H) $(NEXTOR3) $(KEYBOARDBIN_H) $(KEYBOARDBIN) $(MIDIBIN_H) $(MIDIBIN) $(MIDIPACBIN_H) $(MIDIPACBIN) $(JOYSTICKBIN_H) $(JOYSTICKBIN)
 	@echo "Compiling $@"
 	$(CC) $(CCFLAGS) -DAPP_VERSION=\"$(VERSION)\" $(SRCDIR)/$(SOURCES) -o $@
 
@@ -92,6 +93,10 @@ $(MIDIPACBIN_H): $(MIDIPACBIN)
 	@echo "Embedding MIDI-PAC firmware into header"
 	$(UTLDIR)/$(XXD) -i $< $@
 
+$(JOYSTICKBIN_H): $(JOYSTICKBIN)
+	@echo "Embedding Joystick firmware into header"
+	$(UTLDIR)/$(XXD) -i $< $@
+
 $(BINDIR):
 	@mkdir $@
 
@@ -104,6 +109,6 @@ $(DISDIR)/loadrom.exe: $(DISDIR) $(BINDIR)/$(OUTFILE)
 
 clean:
 	@echo "Cleaning ...."
-	$(RM) $(BINDIR)/*.exe $(BINDIR)/*.uf2 $(SRCDIR)/loadrom.h $(SRCDIR)/nextor_sunrise.h $(SRCDIR)/nextor3.h $(SRCDIR)/keyboard.h $(SRCDIR)/midi_fw.h $(SRCDIR)/midipac_fw.h
+	$(RM) $(BINDIR)/*.exe $(BINDIR)/*.uf2 $(SRCDIR)/loadrom.h $(SRCDIR)/nextor_sunrise.h $(SRCDIR)/nextor3.h $(SRCDIR)/keyboard.h $(SRCDIR)/midi_fw.h $(SRCDIR)/midipac_fw.h $(SRCDIR)/joystick_fw.h
 	$(RM) $(DISDIR)/*
 

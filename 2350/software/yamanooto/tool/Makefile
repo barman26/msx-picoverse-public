@@ -23,7 +23,7 @@ UTLDIR  := utils
 CCFLAGS := -g
 
 # Application metadata
-VERSION ?= v1.18
+VERSION ?= v1.19
 
 # Project files
 SOURCES := yamanooto.c

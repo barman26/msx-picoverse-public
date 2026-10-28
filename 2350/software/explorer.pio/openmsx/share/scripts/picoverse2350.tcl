@@ -44,7 +44,7 @@
 
 namespace eval picoverse2350 {
 
-variable version "v2.59"
+variable version "v2.60"
 
 # Flash layout, must match pico/explorer/explorer.c and tool/src/explorer.c.
 # Offsets are relative to the menu ROM (the firmware's flash_rom pointer).

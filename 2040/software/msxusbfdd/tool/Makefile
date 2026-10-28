@@ -34,7 +34,7 @@ CCFLAGS := -g
 endif
 
 # Application metadata
-VERSION ?= v1.00
+VERSION ?= v1.01
 
 # Project files
 SOURCES := msxusbfdd.c

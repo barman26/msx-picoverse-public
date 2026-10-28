@@ -24,7 +24,7 @@ VERBOSE ?= --verbose
 CCFLAGS := -g
 
 # Application metadata
-VERSION ?= v2.79
+VERSION ?= v2.80
 
 # Project files
 SOURCES := loadrom.c

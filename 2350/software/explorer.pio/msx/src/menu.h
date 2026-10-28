@@ -32,6 +32,8 @@
 #define MEMORY_START 0xB900 // Start of the memory area to read the ROM records
 #define ROM_SELECT_REGISTER 0xBF7F // Memory-mapped register that selects the ROM to load
 #define JIFFY 0xFC9E
+#define JOY_FIRST_DELAY  12U // jiffies before a held joystick direction starts repeating
+#define JOY_REPEAT_DELAY 4U  // jiffies between repeats
 #define SOURCE_SD_FLAG 0x80
 #define FOLDER_FLAG 0x40
 #define MP3_FLAG 0x20

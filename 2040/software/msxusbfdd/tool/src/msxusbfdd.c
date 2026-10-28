@@ -23,7 +23,7 @@
 #include "msxusbfdd_rom.h"
 
 #ifndef APP_VERSION
-#define APP_VERSION "v1.00"
+#define APP_VERSION "v1.01"
 #endif
 
 #define UF2FILENAME               "msxusbfdd.uf2"         // this is the UF2 file to program the Raspberry Pi Pico

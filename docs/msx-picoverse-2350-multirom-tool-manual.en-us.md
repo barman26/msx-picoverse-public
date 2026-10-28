@@ -229,6 +229,7 @@ The Sunrise IDE options embed the Nextor 2.1.4 Sunrise IDE kernel ROM (128 KB) i
 - Left/Right: change pages.
 - Enter/Space: load selected ROM.
 - A-Z: jump to the first ROM whose name starts with that letter (case-insensitive), switching to its page if needed.
+- Joystick (port 1 or 2): move the stick to navigate (hold to repeat) and press fire A or B to load the selected ROM.
 - F1: show help screen.
 
 SYSTEM entries (Sunrise IDE) appear alongside regular ROM entries and are selected the same way.

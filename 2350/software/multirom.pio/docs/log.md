@@ -1,5 +1,12 @@
 # Change Log
 
+## PicoVerse 2350 Multirom v2.65
+- Version bumped to v2.65 (top-level, MSX, and tool Makefiles).
+- The MSX menu can now be driven with a joystick on either MSX joystick port, as in PicoVerse 2040 MultiROM v2.68. The commented-out Fusion-C `JoystickRead`/`TriggerRead` code in `msx/src/menu.c` was replaced by `poll_joystick()`, which uses the BIOS `GTSTCK`/`GTTRIG` routines through the new `bios_gtstck()`/`bios_gttrig()` wrappers. Directions map to the cursor keys with a first-press delay (`JOY_FIRST_DELAY`) and auto-repeat (`JOY_REPEAT_DELAY`); fire buttons A/B on both ports act as Enter, once per press (a button held at boot is ignored until released). The help screen mentions the joystick.
+- Docs: 2350 MultiROM tool manual and the public README (MultiROM menu section now mentions joystick support).
+- Moved the RP2350 firmware build from Pico SDK 2.2.0 to Pico SDK 2.3.1 (including its bundled TinyUSB), from the Arm GNU Toolchain 14.2.Rel1 to 15.2.Rel1 (GCC 15.2.1) and from picotool 2.2.0-a4 to 2.3.1. `pico/multirom/CMakeLists.txt` now sets `sdkVersion 2.3.1`, `toolchainVersion 15_2_Rel1` and `picotoolVersion 2.3.1`, and `pico/multirom/pico_extras_import.cmake` fetches pico-extras at tag `sdk-2.3.1` (it was `sdk-2.2.0`) so the audio library matches the SDK. The SDK, toolchain, picotool and pioasm are expected under `~/.pico-sdk/sdk/2.3.1`, `~/.pico-sdk/toolchain/15_2_Rel1`, `~/.pico-sdk/picotool/2.3.1` and `~/.pico-sdk/tools/2.3.1`. The old `pico/multirom/build` directory must be removed once so CMake reconfigures and refetches pico-extras (`make clean` does this).
+- Clean `make all` build succeeds with no source changes; the firmware went from 100812 to 100012 bytes. The embedded firmware header and `tool/dist/multirom.exe` were regenerated; the MSX menu ROM is unchanged. Not yet tested on hardware; the MSX bus, SD/SDIO, I2S audio and USB paths need a check on a real MSX with the new SDK and compiler before release.
+
 ## PicoVerse 2350 Multirom v2.64
 - Version bumped to v2.64 (top-level, MSX, and tool Makefiles).
 - Renamed the `nextor/` folder to `resources/`: the Nextor 2.1.4 Sunrise IDE MasterOnly ROM moved from `nextor/kernel/` to `resources/` (via `git mv`) and the `kernel/` subfolder was removed. `tool/Makefile` now points `NEXTOR_SUNRISE` at `../resources/`, which renames the `xxd` embed symbol to `___resources_Nextor_2_1_4_SunriseIDE_MasterOnly_ROM`.

@@ -140,3 +140,4 @@ make test
 - **Original Rookie Drive USB FDD BIOS / USBHOST NestorBIOS 2.2:** Konamiman (Néstor Soriano), 2018–2022.
 - **MSXUSB adaptation and PicoVerse 2040 implementation (RP2040 PIO bus, mailbox architecture, UFI/MSC USB host stack, FatFs integration, and UF2 builder tool):** Cristiano Goncalves (The Retro Hacker), 2026.
 - **FatFs — Generic FAT Filesystem Module (R0.15):** ChaN.
+

@@ -28,7 +28,7 @@ if (NOT PICO_EXTRAS_PATH)
         FetchContent_Declare(
                 pico_extras
                 GIT_REPOSITORY https://github.com/raspberrypi/pico-extras
-                GIT_TAG sdk-2.2.0
+                GIT_TAG sdk-2.3.1
         )
         if (NOT pico_extras)
             message("Downloading Raspberry Pi Pico Extras")

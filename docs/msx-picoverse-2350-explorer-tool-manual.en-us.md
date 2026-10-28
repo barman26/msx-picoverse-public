@@ -308,6 +308,21 @@ For the best experience with very large ROM collections, consider organizing ROM
 - **/**: Search ROM names on line 24. Type a partial name and press Enter to jump to the first matching ROM; Esc cancels and restores the current page and source status.
 - **C**: Toggle between 40-column and 80-column layouts when your MSX supports it (auto-detects 80-column capable machines and defaults to 80 columns unless forced otherwise).
 
+### Joystick control
+
+Explorer's flash and microSD lists can be driven with a joystick connected to either MSX joystick port (port 1 or 2):
+
+| Joystick | Acts as | Use |
+|----------|---------|-----|
+| Up / Down / Left / Right | Cursor keys | Move the selection and change pages. A held direction repeats after a short delay. Diagonals are ignored. |
+| Fire button A or B | **Space** | Quick-run the selected ROM with its saved `.PVC` options (or defaults), exactly like pressing Space. On folders it enters the folder. |
+
+Notes:
+
+- Both fire buttons do the same thing, and there is no joystick equivalent of **Enter**: open the ROM detail/configuration screen with the keyboard.
+- Each press acts once. A fire button that is held while the menu starts is ignored until it is released.
+- The joystick only works in the flash and microSD lists. The ROM detail, MP3, File Hunter and help screens, Esc, the F1-F5 keys, the letter shortcuts and the `Y/N` prompts need the keyboard.
+
 ### Standard bottom rows
 
 - **Line 23** evenly distributes the gaps between list options. In 80 columns every footer label is enclosed in brackets: `[F1 FLASH]`, `[F2 SD CARD]`, `[F3 FILE HUNTER]`, `[F4 WIFI]`, and `[F5 HELP]`; this also applies to Help and detail-screen controls. The 40-column labels remain unbracketed and unchanged. Gaps differ by at most one character. The selected source stays highlighted while navigating, searching, or displaying messages, with exactly one inverted space before and after its complete label (including brackets in 80 columns). The bar reserves the final two screen columns.

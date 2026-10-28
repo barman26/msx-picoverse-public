@@ -21,9 +21,9 @@ if(WIN32)
 else()
     set(USERHOME $ENV{HOME})
 endif()
-set(sdkVersion 2.2.0)
-set(toolchainVersion 14_2_Rel1)
-set(picotoolVersion 2.2.0-a4)
+set(sdkVersion 2.3.1)
+set(toolchainVersion 15_2_Rel1)
+set(picotoolVersion 2.3.1)
 set(picoVscode ${USERHOME}/.pico-sdk/cmake/pico-vscode.cmake)
 if (EXISTS ${picoVscode})
     include(${picoVscode})
@@ -54,7 +54,7 @@ add_executable(msxusbfdd
 pico_generate_pio_header(msxusbfdd ${CMAKE_CURRENT_LIST_DIR}/msx_bus.pio)
 
 pico_set_program_name(msxusbfdd "msxusbfdd")
-pico_set_program_version(msxusbfdd "1.0")
+pico_set_program_version(msxusbfdd "1.01")
 
 # Modify the below lines to enable/disable output over UART/USB
 pico_enable_stdio_uart(msxusbfdd 0)

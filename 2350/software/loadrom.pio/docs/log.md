@@ -1,5 +1,15 @@
 # Change Log
 
+## PicoVerse 2350 Loadrom v2.80
+
+- Excluded `build` directories at every depth from public software and case packaging in `build/Makefile`, preserving the existing firmware/library exclusions. Non-Windows case copying now uses `rsync` to apply the same directory filter.
+- Added third-party UF2 distribution folders for both cartridge variants, packaged all `.uf2` files into the matching public `firmware/2040` or `firmware/2350` directory, and credited Jzzy-dev's PicoAmp firmware in the public README.
+- Bumped LoadROM version to v2.80 (top-level `Makefile` and `tool/Makefile`).
+- Moved all four RP2350 firmwares (`pico/loadrom`, `pico/opl4` including its 22.05 kHz `build22k` variant, and `pico/msxaudio`) from Pico SDK 2.2.0 to Pico SDK 2.3.1 (including its bundled TinyUSB) and from picotool 2.2.0-a4 to 2.3.1. Each `CMakeLists.txt` now sets `sdkVersion 2.3.1` and `picotoolVersion 2.3.1`, and each `pico_extras_import.cmake` fetches pico-extras at tag `sdk-2.3.1` (it was `sdk-2.1.1`) so the audio library matches the SDK. `pico/loadrom` also moved from the Arm GNU Toolchain 14.2.Rel1 to 15.2.Rel1 (GCC 15.2.1, `toolchainVersion 15_2_Rel1`); `pico/opl4` and `pico/msxaudio` stay on 14.2.Rel1 (`toolchainVersion 14_2_Rel1`, see below). The SDK, toolchains, picotool and pioasm are expected under `~/.pico-sdk/sdk/2.3.1`, `~/.pico-sdk/toolchain/14_2_Rel1` and `15_2_Rel1`, `~/.pico-sdk/picotool/2.3.1` and `~/.pico-sdk/tools/2.3.1`. The old `pico/*/build` directories (and `pico/opl4/build22k`, which `make clean` does not remove) must be removed once so CMake reconfigures and refetches pico-extras.
+- Clean `make all` builds all firmwares and the tool without source changes. `dist/*.bin` sizes (bytes, old to new): loadrom 199892 to 200124, opl4 97456 to 97456, opl4_22k 98720 to 98720, msxaudio 91312 to 91316. The embedded headers (`loadrom.h`, `opl4_fw.h`, `opl4_fw_22k.h`, `msxaudio_fw.h`) and `tool/dist/loadrom.exe` were regenerated.
+- OPL4 and MSX-AUDIO stay on toolchain 14.2.Rel1. With 15.2.Rel1 these images came out about 55% smaller (opl4 43996, opl4_22k 45004, msxaudio 38072 bytes; text 48092 vs 101552 bytes for opl4 built with 14.2), and a control build with SDK 2.3.1 and 14.2.Rel1 reproduced the old size, so the change comes from GCC 15.2 and not from the SDK. The same GCC 15 build broke the MP3 player in 2350 Explorer on hardware (Explorer was returned to 14.2.Rel1 and works), and these emulators run near their real-time CPU budget (the OPL4 sources are built with `-O3 -funroll-loops`), so GCC 15 is not used for them.
+- Not yet tested on hardware with SDK 2.3.1; the MSX bus, SD/SDIO, WiFi, FM-PAC, OPL4 and MSX-AUDIO paths need a check on a real MSX.
+
 ## PicoVerse 2350 Loadrom v2.79
 
 - Added the shared [SymbOS setup guide](../../../../docs/msx-picoverse-2350-symbos.md), covering the patched Sunrise IDE driver, LoadROM mapper/WiFi images, slot and partition settings, the PicoVerse network daemon, and SymZilla/GB-proxy. Linked it from the documentation index and Sunrise/WiFi guides, distinguishing LoadROM-only SymbOS networking from shared LoadROM/Explorer disk support.

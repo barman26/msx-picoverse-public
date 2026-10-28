@@ -1,10 +1,17 @@
 # Change Log
 
+## PicoVerse 2040 Multirom v2.69
+
+- Version bumped to v2.69 (top-level and tool Makefiles, and the `picoverse2040.tcl` script version).
+- Moved the RP2040 firmware build from Pico SDK 2.2.0 to Pico SDK 2.3.1 and from the Arm GNU Toolchain 14.2.Rel1 to 15.2.Rel1 (GCC 15.2.1). `pico/multirom/CMakeLists.txt` now sets `sdkVersion 2.3.1`, `toolchainVersion 15_2_Rel1` and `picotoolVersion 2.3.1`, and the `.vscode` files (`settings.json`, `c_cpp_properties.json`, `launch.json`, `tasks.json`) point to the SDK 2.3.1, toolchain 15_2_Rel1 and picotool 2.3.1 folders.
+- The SDK 2.3.1 tag (with submodules, including its bundled TinyUSB), `pico-sdk-tools` 2.3.1 (pioasm), picotool 2.3.1 and the Arm GNU Toolchain 15.2.Rel1 are expected under `~/.pico-sdk/sdk/2.3.1`, `~/.pico-sdk/tools/2.3.1`, `~/.pico-sdk/picotool/2.3.1` and `~/.pico-sdk/toolchain/15_2_Rel1`. The old `pico/multirom/build` directory must be removed once so CMake reconfigures against the new SDK and compiler (`make clean` does this).
+- Clean `make all` build with SDK 2.3.1 and toolchain 15.2.Rel1 completes without changes to the firmware sources; `multirom.bin` went from 55816 to 53240 bytes. Rebuilt `msx/dist/menu.rom` (header shows `[MultiROM v2.69]`), the embedded firmware/menu headers and `tool/dist/multirom.exe`. Not yet tested on hardware; because the MSX bus handling is timing-sensitive, the new compiler needs a hardware check before release.
+
 ## PicoVerse 2040 Multirom v2.68
 
 - Version bumped to v2.68 (top-level and tool Makefiles, and the `picoverse2040.tcl` script version).
 - The MSX menu can now be driven with a joystick on either MSX joystick port. The commented-out Fusion-C `JoystickRead`/`TriggerRead` code in `msx/src/menu.c` was replaced by `poll_joystick()`, which uses the BIOS `GTSTCK`/`GTTRIG` routines through new `bios_gtstck()`/`bios_gttrig()` wrappers. Directions map to the cursor keys with a first-press delay (`JOY_FIRST_DELAY`) and auto-repeat (`JOY_REPEAT_DELAY`) so the stick is no longer too fast; fire buttons A/B on both ports act as Enter, once per press (a button held at boot is ignored until released). The help screen mentions the joystick.
-- Docs: 2040 MultiROM tool manual and `msx-picoverse-2040-menu.md`.
+- Docs: 2040 MultiROM tool manual, `msx-picoverse-2040-menu.md` and the public README (MultiROM menu section now mentions joystick support).
 
 ## PicoVerse 2040 Multirom v2.67
 

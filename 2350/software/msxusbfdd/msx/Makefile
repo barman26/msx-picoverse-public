@@ -16,7 +16,7 @@ BINDIR = build
 DISDIR = dist
 
 # Project metadata (shared with the top-level Makefile)
-VERSION ?= v1.00
+VERSION ?= v1.01
 
 OUTFILE = msxusbfdd.rom
 SOURCES = $(wildcard $(SRCDIR)/*.asm) $(wildcard $(SRCDIR)/bank0/*.asm) $(wildcard $(SRCDIR)/bank1/*.asm)

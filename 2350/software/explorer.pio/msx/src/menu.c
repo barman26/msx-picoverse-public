@@ -759,6 +759,92 @@ void launch_wifi_config(void) {
 }
 
 
+// bios_gtstck - Read a joystick direction using the MSX BIOS routine GTSTCK
+// port 1 and 2 select the joystick ports. Returns 0 (centered) or 1-8 (clockwise from up).
+static unsigned char bios_gtstck(unsigned char port) __naked
+{
+    (void)port;
+    __asm
+    ld      hl,#2
+    add     hl,sp
+    ld      a,(hl)
+    ld      iy,(#BIOS_EXPTBL-1)
+    push    ix
+    ld      ix,#BIOS_GTSTCK
+    call    BIOS_CALSLT
+    pop     ix
+    ld      l,a
+    ld      h,#0
+    ret
+    __endasm;
+}
+
+// bios_gttrig - Read a trigger button using the MSX BIOS routine GTTRIG
+// 1/3 select port 1 buttons A/B and 2/4 select port 2 buttons A/B. Returns 0xFF when pressed.
+static unsigned char bios_gttrig(unsigned char button) __naked
+{
+    (void)button;
+    __asm
+    ld      hl,#2
+    add     hl,sp
+    ld      a,(hl)
+    ld      iy,(#BIOS_EXPTBL-1)
+    push    ix
+    ld      ix,#BIOS_GTTRIG
+    call    BIOS_CALSLT
+    pop     ix
+    ld      l,a
+    ld      h,#0
+    ret
+    __endasm;
+}
+
+// Joystick state, initialized in main(). Directions repeat at a controlled rate and the
+// fire buttons only trigger once per press, because the raw joystick is too fast for the menu.
+static unsigned char joy_last_dir;
+static unsigned char joy_fire_down;
+static unsigned int joy_repeat_at;
+
+// poll_joystick - Poll both joystick ports and translate them to menu key codes
+// Returns the cursor key code for a direction (with first-press delay and auto-repeat),
+// 32 (Space, run the ROM) for a new press of any fire button, or 0 when there is nothing to report.
+static int poll_joystick(void)
+{
+    volatile unsigned int *jiffyPtr = (volatile unsigned int *)JIFFY;
+    unsigned char fire = bios_gttrig(1) | bios_gttrig(2) | bios_gttrig(3) | bios_gttrig(4);
+    unsigned char dir = bios_gtstck(1);
+
+    if (!dir) {
+        dir = bios_gtstck(2);
+    }
+
+    if (fire) {
+        if (!joy_fire_down) {
+            joy_fire_down = 1;
+            return 32;
+        }
+    } else {
+        joy_fire_down = 0;
+    }
+
+    if (!(dir & 1)) {
+        joy_last_dir = 0; // centered or a diagonal
+        return 0;
+    }
+
+    unsigned int now = *jiffyPtr;
+    if (dir != joy_last_dir) {
+        joy_last_dir = dir;
+        joy_repeat_at = now + JOY_FIRST_DELAY;
+    } else if ((int)(now - joy_repeat_at) >= 0) {
+        joy_repeat_at = now + JOY_REPEAT_DELAY;
+    } else {
+        return 0;
+    }
+    // GTSTCK 1/3/5/7 = up/right/down/left -> cursor key codes 30/28/31/29
+    return dir == 1 ? 30 : dir == 3 ? 28 : dir == 5 ? 31 : 29;
+}
+
 // Idle polling keeps the disk LED and selected name animation responsive.
 static int wait_for_key_with_scroll(void)
 {
@@ -773,6 +859,13 @@ static int wait_for_key_with_scroll(void)
         unsigned char peek = bios_chsns();
         if (peek) {
             return (int)bios_chget();
+        }
+
+        {
+            int joyKey = poll_joystick();
+            if (joyKey) {
+                return joyKey;
+            }
         }
 
         disk_led_poll();
@@ -872,7 +965,7 @@ void helpMenu()
         "\1Navigation\0"
         "UP/DOWN - Move selection\0"
         "LEFT/RIGHT - Change page or option\0"
-        "ENTER - Detail  /  SPACE - Run\0"
+        "ENTER - Detail  /  SPACE or FIRE - Run\0"
         "ESC - Back or leave folder\0"
         "\1Sources\0"
         "F1 - Flash  F2 - SD  F3 - FileHunter\0"
@@ -1164,6 +1257,9 @@ void main() {
     menu_message_row = 0;
     menu_shortcut_selection = MENU_SHORTCUT_FLASH;
     menu_pending_key = 0;
+    joy_last_dir = 0;
+    joy_fire_down = 1; // a fire button held during boot must be released before it runs a ROM
+    joy_repeat_at = 0;
     fh_catalog_type = CTRL_FH_TYPE_ROM;
     
     readROMData(&totalFiles);
